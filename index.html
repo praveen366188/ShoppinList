@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery & Household Checklist</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+            font-weight: 300;
+            font-size: 2.5em;
+        }
+        .category {
+            background-color: #f8f9fa;
+            border: none;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: all 0.3s ease;
+        }
+        .category:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .category-header {
+            background: linear-gradient(90deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 18px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+        .category-header:hover {
+            background: linear-gradient(90deg, #1976D2, #00BCD4);
+        }
+        .items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            padding: 0 20px;
+        }
+        .items.open {
+            max-height: 9999px;
+            padding: 20px;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 12px;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .item input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+            accent-color: #4CAF50;
+        }
+        .item span {
+            flex: 1;
+            margin-right: 15px;
+            font-size: 1.1em;
+        }
+        .item input[type="text"] {
+            width: 80px;
+            padding: 8px 12px;
+            margin: 0 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            transition: border-color 0.3s ease;
+        }
+        .item input[type="text"]:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        .delete {
+            background: linear-gradient(45deg, #ff4d4d, #ff6b6b);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        .delete:hover {
+            background: linear-gradient(45deg, #cc0000, #e53935);
+            transform: scale(1.05);
+        }
+        .add-item {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        .add-item:hover {
+            background: linear-gradient(45deg, #388E3C, #43A047);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #add-category {
+            background: linear-gradient(45deg, #2196F3, #42A5F5);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            margin: 25px 0 15px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        #add-category:hover {
+            background: linear-gradient(45deg, #1976D2, #1E88E5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #reset {
+            background: linear-gradient(45deg, #ff9800, #ffb74d);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        #reset:hover {
+            background: linear-gradient(45deg, #e68900, #ff8f00);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #export {
+            background: linear-gradient(45deg, #9c27b0, #ba68c8);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        #export:hover {
+            background: linear-gradient(45deg, #7b1fa2, #9c27b0);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .checked {
+            text-decoration: line-through;
+            color: #888;
+            opacity: 0.6;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item span {
+                margin-bottom: 8px;
+            }
+            .item input[type="text"] {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grocery & Household Checklist</h1>
+        <div id="app"></div>
+        <button id="add-category">Add New Category</button>
+        <button id="reset">Reset All Checks</button>
+        <button id="export">Export/Print</button>
+    </div>
+
+    <script>
+        // Data model: { categories: [{ name: string, items: [{ name: string, quantity: string, unit: string, checked: boolean }] }] }
+        const STORAGE_KEY = 'groceryChecklist';
+
+        // Preloaded data
+        const preloadedData = {
+            categories: [
+                {
+                    name: "Groceries & Pantry",
+                    items: [
+                        { name: "Toor Dal", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Moong Dal", quantity: "1", unit: "kg", checked: false },
+                        { name: "Chana Dal", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Urad Dal", quantity: "4 x 0.5", unit: "kg packets", checked: false },
+                        { name: "Salt", quantity: "2", unit: "kg", checked: false },
+                        { name: "Table Salt", quantity: "1", unit: "kg", checked: false },
+                        { name: "Sugar", quantity: "1", unit: "kg", checked: false },
+                        { name: "Jaggery", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Tea", quantity: "1", unit: "packet", checked: false },
+                        { name: "Coffee", quantity: "", unit: "Davidoff Brew", checked: false },
+                        { name: "Horlicks", quantity: "", unit: "", checked: false },
+                        { name: "Honey", quantity: "2", unit: "bottles", checked: false },
+                        { name: "Cheese Slices", quantity: "", unit: "", checked: false },
+                        { name: "Chilli Flakes", quantity: "", unit: "", checked: false },
+                        { name: "Oregano", quantity: "", unit: "", checked: false },
+                        { name: "Peri-Peri Masala", quantity: "", unit: "", checked: false },
+                        { name: "Chat Masala", quantity: "", unit: "", checked: false },
+                        { name: "Dry Red Chilli", quantity: "", unit: "", checked: false },
+                        { name: "Ketchup", quantity: "", unit: "", checked: false },
+                        { name: "Soya Sauce", quantity: "", unit: "", checked: false },
+                        { name: "Chilli Sauce", quantity: "", unit: "", checked: false },
+                        { name: "Chilli Oil", quantity: "", unit: "", checked: false },
+                        { name: "Vinegar", quantity: "", unit: "", checked: false },
+                        { name: "Schezwan Chutney", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Spices & Masala",
+                    items: [
+                        { name: "Turmeric Powder", quantity: "100", unit: "g", checked: false },
+                        { name: "Red Chilli Powder", quantity: "100", unit: "g", checked: false },
+                        { name: "Kashmiri Chilli Powder", quantity: "100", unit: "g", checked: false },
+                        { name: "Coriander Powder", quantity: "100", unit: "g", checked: false },
+                        { name: "Jeera", quantity: "250", unit: "g", checked: false },
+                        { name: "Pepper", quantity: "200", unit: "g", checked: false },
+                        { name: "Garam Masala", quantity: "100", unit: "g", checked: false },
+                        { name: "Mustard Seeds", quantity: "200", unit: "g", checked: false },
+                        { name: "Saunf", quantity: "200", unit: "g", checked: false },
+                        { name: "Methi Seeds", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Hing", quantity: "1", unit: "box", checked: false },
+                        { name: "Bay Leaf", quantity: "", unit: "Tej Patta", checked: false },
+                        { name: "Star Anise", quantity: "", unit: "", checked: false },
+                        { name: "Elaichi", quantity: "100", unit: "g", checked: false },
+                        { name: "Coriander Seeds", quantity: "0.5", unit: "kg", checked: false }
+                    ]
+                },
+                {
+                    name: "Flours & Grains",
+                    items: [
+                        { name: "Wheat Flour", quantity: "3", unit: "kg", checked: false },
+                        { name: "Jowar Flour", quantity: "2", unit: "kg", checked: false },
+                        { name: "Ragi Flour", quantity: "2", unit: "kg", checked: false },
+                        { name: "Thalipeeth Flour", quantity: "1", unit: "kg", checked: false },
+                        { name: "Maida", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Besan", quantity: "1", unit: "kg", checked: false },
+                        { name: "Suji", quantity: "0.5", unit: "kg", checked: false }
+                    ]
+                },
+                {
+                    name: "Rice",
+                    items: [
+                        { name: "Jeera Rice", quantity: "15", unit: "kg", checked: false },
+                        { name: "Idli Rice", quantity: "5", unit: "kg", checked: false },
+                        { name: "Raw Rice", quantity: "2", unit: "kg", checked: false },
+                        { name: "Basmati Rice", quantity: "1", unit: "kg", checked: false }
+                    ]
+                },
+                {
+                    name: "Oils & Fats",
+                    items: [
+                        { name: "Rice Bran Oil", quantity: "5", unit: "L", checked: false },
+                        { name: "Sesame Oil", quantity: "0.5", unit: "L", checked: false },
+                        { name: "Coconut Oil", quantity: "0.5", unit: "L", checked: false },
+                        { name: "Ghee", quantity: "1", unit: "L", checked: false },
+                        { name: "Olive Oil", quantity: "1", unit: "L", checked: false },
+                        { name: "Butter", quantity: "1", unit: "pack", checked: false }
+                    ]
+                },
+                {
+                    name: "Dry Fruits & Nuts",
+                    items: [
+                        { name: "Cashew", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Almonds", quantity: "", unit: "", checked: false },
+                        { name: "Walnuts", quantity: "", unit: "", checked: false },
+                        { name: "Black Raisins", quantity: "", unit: "", checked: false },
+                        { name: "Peanuts", quantity: "", unit: "", checked: false },
+                        { name: "Dates", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Cooking Essentials",
+                    items: [
+                        { name: "Poha", quantity: "2", unit: "kg", checked: false },
+                        { name: "Sabudana", quantity: "1", unit: "kg", checked: false },
+                        { name: "Oats", quantity: "1", unit: "packet", checked: false },
+                        { name: "Maggi", quantity: "1", unit: "packet", checked: false },
+                        { name: "Maggi Masala", quantity: "1", unit: "packet", checked: false },
+                        { name: "Soya Chunks", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "White Chana", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Black Chana", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Rajma", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Green Moong", quantity: "1", unit: "kg", checked: false },
+                        { name: "Chia Seeds", quantity: "250", unit: "g", checked: false },
+                        { name: "Sabja Seeds", quantity: "100", unit: "g", checked: false }
+                    ]
+                },
+                {
+                    name: "Snacks",
+                    items: [
+                        { name: "Tea Rusk", quantity: "3", unit: "packets", checked: false },
+                        { name: "Marie Biscuits", quantity: "1", unit: "packet", checked: false },
+                        { name: "Hide & Seek", quantity: "1", unit: "packet", checked: false },
+                        { name: "Makhana", quantity: "3", unit: "packets", checked: false },
+                        { name: "Roasted Chana", quantity: "1", unit: "packet", checked: false },
+                        { name: "Banana Chips", quantity: "", unit: "", checked: false },
+                        { name: "Potato Chips", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Dairy & Eggs",
+                    items: [
+                        { name: "Paneer", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Bread", quantity: "1", unit: "packet", checked: false },
+                        { name: "Eggs", quantity: "60", unit: "", checked: false },
+                        { name: "Curd", quantity: "2", unit: "packets", checked: false },
+                        { name: "Milk", quantity: "daily 2", unit: "packets", checked: false }
+                    ]
+                },
+                {
+                    name: "Weekly Vegetables",
+                    items: [
+                        { name: "Onion", quantity: "2", unit: "kg", checked: false },
+                        { name: "Tomato", quantity: "2", unit: "kg", checked: false },
+                        { name: "Potato", quantity: "1", unit: "kg", checked: false },
+                        { name: "Green Chilli", quantity: "100", unit: "g", checked: false },
+                        { name: "Ginger", quantity: "250", unit: "g", checked: false },
+                        { name: "Lemon", quantity: "250", unit: "g", checked: false },
+                        { name: "Coriander Leaves", quantity: "", unit: "", checked: false },
+                        { name: "Mint Leaves", quantity: "", unit: "", checked: false },
+                        { name: "Curry Leaves", quantity: "", unit: "", checked: false },
+                        { name: "Coconut", quantity: "1", unit: "", checked: false },
+                        { name: "Small Onion", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Bhindi", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Carrot", quantity: "2", unit: "kg", checked: false },
+                        { name: "Beans", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Drumstick", quantity: "", unit: "", checked: false },
+                        { name: "Cucumber", quantity: "2", unit: "kg", checked: false },
+                        { name: "Brinjal", quantity: "250", unit: "g", checked: false },
+                        { name: "Mushroom", quantity: "2", unit: "packs", checked: false },
+                        { name: "Cauliflower", quantity: "2", unit: "", checked: false },
+                        { name: "Cabbage", quantity: "1", unit: "", checked: false },
+                        { name: "Pumpkin", quantity: "0.5", unit: "kg", checked: false },
+                        { name: "Spinach", quantity: "1", unit: "bunch", checked: false },
+                        { name: "Methi", quantity: "1", unit: "bunch", checked: false },
+                        { name: "Sweet Potato", quantity: "0.5", unit: "kg", checked: false }
+                    ]
+                },
+                {
+                    name: "Meat",
+                    items: [
+                        { name: "Chicken", quantity: "3", unit: "times/week", checked: false },
+                        { name: "Fish", quantity: "2", unit: "times/week", checked: false },
+                        { name: "Mutton", quantity: "1", unit: "time/week", checked: false },
+                        { name: "Chicken Boneless", quantity: "200 g x 10", unit: "packets", checked: false }
+                    ]
+                },
+                {
+                    name: "Toiletries & Cleaning",
+                    items: [
+                        { name: "Mysore Sandal Soap", quantity: "", unit: "", checked: false },
+                        { name: "Tissue Paper", quantity: "", unit: "", checked: false },
+                        { name: "Hand Wash", quantity: "", unit: "", checked: false },
+                        { name: "Body Wash", quantity: "", unit: "", checked: false },
+                        { name: "Washing Soap", quantity: "", unit: "", checked: false },
+                        { name: "Liquid Detergent", quantity: "", unit: "", checked: false },
+                        { name: "Harpic", quantity: "", unit: "", checked: false },
+                        { name: "Floor Cleaner", quantity: "", unit: "", checked: false },
+                        { name: "Comfort", quantity: "", unit: "", checked: false },
+                        { name: "Garbage Bags", quantity: "", unit: "", checked: false },
+                        { name: "Sanitary Napkins", quantity: "", unit: "", checked: false },
+                        { name: "Shampoo", quantity: "", unit: "Sunsilk", checked: false },
+                        { name: "Parachute Coconut Oil", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Kitchen Supplies",
+                    items: [
+                        { name: "Dish Wash Soap", quantity: "", unit: "", checked: false },
+                        { name: "Liquid Dish Wash", quantity: "", unit: "", checked: false },
+                        { name: "Scrubber", quantity: "", unit: "", checked: false },
+                        { name: "Kitchen Towels", quantity: "", unit: "", checked: false },
+                        { name: "Kitchen Tissue", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Temple Items",
+                    items: [
+                        { name: "Agarbatti", quantity: "", unit: "", checked: false },
+                        { name: "Camphor", quantity: "", unit: "", checked: false },
+                        { name: "Cotton", quantity: "", unit: "", checked: false },
+                        { name: "Matchsticks", quantity: "", unit: "", checked: false },
+                        { name: "Dhoop", quantity: "", unit: "", checked: false }
+                    ]
+                },
+                {
+                    name: "Online Orders",
+                    items: [
+                        { name: "Sambar Masala", quantity: "", unit: "Sakthi", checked: false },
+                        { name: "Snacks", quantity: "", unit: "", checked: false }
+                    ]
+                }
+            ]
+        };
+
+        let data = loadData();
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            } else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(preloadedData));
+                return preloadedData;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            data.categories.forEach((category, catIndex) => {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = category.name;
+                header.addEventListener('click', () => {
+                    const itemsDiv = catDiv.querySelector('.items');
+                    itemsDiv.classList.toggle('open');
+                });
+
+                const deleteCatBtn = document.createElement('button');
+                deleteCatBtn.textContent = 'Delete Category';
+                deleteCatBtn.style.marginLeft = 'auto';
+                deleteCatBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('Delete this category?')) {
+                        data.categories.splice(catIndex, 1);
+                        saveData();
+                        render();
+                    }
+                });
+                header.appendChild(deleteCatBtn);
+
+                catDiv.appendChild(header);
+
+                const itemsDiv = document.createElement('div');
+                itemsDiv.className = 'items';
+
+                category.items.forEach((item, itemIndex) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = item.checked;
+                    checkbox.addEventListener('change', () => {
+                        item.checked = checkbox.checked;
+                        span.classList.toggle('checked', item.checked);
+                        saveData();
+                    });
+
+                    const span = document.createElement('span');
+                    span.textContent = item.name;
+                    if (item.checked) span.classList.add('checked');
+
+                    const qtyInput = document.createElement('input');
+                    qtyInput.type = 'text';
+                    qtyInput.className = 'quantity';
+                    qtyInput.value = item.quantity;
+                    qtyInput.addEventListener('input', () => {
+                        item.quantity = qtyInput.value;
+                        saveData();
+                    });
+
+                    const unitInput = document.createElement('input');
+                    unitInput.type = 'text';
+                    unitInput.className = 'unit';
+                    unitInput.value = item.unit;
+                    unitInput.addEventListener('input', () => {
+                        item.unit = unitInput.value;
+                        saveData();
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', () => {
+                        if (confirm('Delete this item?')) {
+                            category.items.splice(itemIndex, 1);
+                            saveData();
+                            render();
+                        }
+                    });
+
+                    itemDiv.appendChild(checkbox);
+                    itemDiv.appendChild(span);
+                    itemDiv.appendChild(qtyInput);
+                    itemDiv.appendChild(unitInput);
+                    itemDiv.appendChild(deleteBtn);
+
+                    itemsDiv.appendChild(itemDiv);
+                });
+
+                const addItemBtn = document.createElement('button');
+                addItemBtn.className = 'add-item';
+                addItemBtn.textContent = 'Add Item';
+                addItemBtn.addEventListener('click', () => {
+                    const name = prompt('Item name:');
+                    if (name) {
+                        const quantity = prompt('Quantity (optional):') || '';
+                        const unit = prompt('Unit (optional):') || '';
+                        category.items.push({ name, quantity, unit, checked: false });
+                        saveData();
+                        render();
+                    }
+                });
+                itemsDiv.appendChild(addItemBtn);
+
+                catDiv.appendChild(itemsDiv);
+                app.appendChild(catDiv);
+            });
+        }
+
+        document.getElementById('add-category').addEventListener('click', () => {
+            const name = prompt('Category name:');
+            if (name) {
+                data.categories.push({ name, items: [] });
+                saveData();
+                render();
+            }
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            data.categories.forEach(cat => {
+                cat.items.forEach(item => item.checked = false);
+            });
+            saveData();
+            render();
+        });
+
+        document.getElementById('export').addEventListener('click', () => {
+            const printWindow = window.open('', '_blank');
+            let html = '<html><head><title>Checklist</title><style>body{font-family:Arial,sans-serif;} .category{margin:20px 0;} .item{margin:5px 0;}</style></head><body><h1>Grocery & Household Checklist</h1>';
+            data.categories.forEach(cat => {
+                html += `<div class="category"><h2>${cat.name}</h2>`;
+                cat.items.forEach(item => {
+                    const checked = item.checked ? ' (checked)' : '';
+                    html += `<div class="item">${item.name} - ${item.quantity} ${item.unit}${checked}</div>`;
+                });
+                html += '</div>';
+            });
+            html += '</body></html>';
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+        });
+
+        render();
+    </script>
+</body>
+</html>
