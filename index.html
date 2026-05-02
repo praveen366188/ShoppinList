@@ -248,7 +248,9 @@
 
         #add-category,
         #reset,
-        #export {
+        #export-all,
+        #export-checked,
+        #export-unchecked {
             padding: var(--spacing-lg);
             cursor: pointer;
             border-radius: 8px;
@@ -281,15 +283,39 @@
             color: white;
         }
 
-        #export {
+        #export-all {
             background-color: var(--color-success);
             color: white;
         }
 
-        #export:hover {
+        #export-all:hover {
             background-color: #059669;
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
+        }
+
+        #export-checked {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        #export-checked:hover {
+            background-color: #45a049;
+        }
+
+        #export-unchecked {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        #export-unchecked:hover {
+            background-color: #1976d2;
+        }
+
+        .export-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
         }
 
         /* Mobile responsiveness */
@@ -350,7 +376,11 @@
         <div class="button-group">
             <button id="add-category">+ Add New Category</button>
             <button id="reset">↻ Reset All Checks</button>
-            <button id="export">⬇ Export/Print</button>
+            <div class="export-group">
+                <button id="export-all">⬇ Export All</button>
+                <button id="export-checked">✅ Export Checked</button>
+                <button id="export-unchecked">⬜ Export Unchecked</button>
+            </div>
         </div>
     </div>
 
@@ -763,22 +793,42 @@
             render();
         });
 
-        document.getElementById('export').addEventListener('click', () => {
+        document.getElementById('export-all').addEventListener('click', () => {
+            exportData('all');
+        });
+
+        document.getElementById('export-checked').addEventListener('click', () => {
+            exportData('checked');
+        });
+
+        document.getElementById('export-unchecked').addEventListener('click', () => {
+            exportData('unchecked');
+        });
+
+        function exportData(type) {
             const printWindow = window.open('', '_blank');
             let html = '<html><head><title>Checklist</title><style>body{font-family:Arial,sans-serif;} .category{margin:20px 0;} .item{margin:5px 0;}</style></head><body><h1>Grocery & Household Checklist</h1>';
+
             data.categories.forEach(cat => {
-                html += `<div class="category"><h2>${cat.name}</h2>`;
+                let categoryItems = '';
                 cat.items.forEach(item => {
                     const checked = item.checked ? ' (checked)' : '';
-                    html += `<div class="item">${item.name} - ${item.quantity} ${item.unit}${checked}</div>`;
+                    if (type === 'all' || (type === 'checked' && item.checked) || (type === 'unchecked' && !item.checked)) {
+                        categoryItems += `<div class="item">${item.name} - ${item.quantity} ${item.unit}${checked}</div>`;
+                    }
                 });
-                html += '</div>';
+
+                // Only add category if it has items to display
+                if (categoryItems) {
+                    html += `<div class="category"><h2>${cat.name}</h2>${categoryItems}</div>`;
+                }
             });
+
             html += '</body></html>';
             printWindow.document.write(html);
             printWindow.document.close();
             printWindow.print();
-        });
+        }
 
         render();
     </script>
