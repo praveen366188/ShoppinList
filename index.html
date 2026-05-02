@@ -1054,7 +1054,9 @@
                         categoryTotal++;
                         if (item.checked) categoryChecked++;
                         const checkBoxHtml = item.checked ? '✓' : '☐';
-                        const isChecked = item.checked ? 'checked' : '';
+                        // Don't show strikethrough for checked export type
+                        const shouldShowStrikethrough = (type !== 'checked') && item.checked;
+                        const isChecked = shouldShowStrikethrough ? 'checked' : '';
                         categoryItems += `<tr>
                             <td class="checkbox-col"><div class="checkbox-print ${isChecked ? 'checkbox-checked' : ''}">${item.checked ? '✓' : ''}</div></td>
                             <td class="item-name ${isChecked}"">${item.name}</td>
