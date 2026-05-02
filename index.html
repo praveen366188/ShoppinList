@@ -806,25 +806,303 @@
         });
 
         function exportData(type) {
+            // Calculate statistics
+            let totalItems = 0;
+            let checkedItems = 0;
+            data.categories.forEach(cat => {
+                cat.items.forEach(item => {
+                    if (type === 'all' || (type === 'checked' && item.checked) || (type === 'unchecked' && !item.checked)) {
+                        totalItems++;
+                        if (item.checked) checkedItems++;
+                    }
+                });
+            });
+            const completionPercent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+            // Format timestamp
+            const now = new Date();
+            const timestamp = now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
             const printWindow = window.open('', '_blank');
-            let html = '<html><head><title>Checklist</title><style>body{font-family:Arial,sans-serif;} .category{margin:20px 0;} .item{margin:5px 0;}</style></head><body><h1>Grocery & Household Checklist</h1>';
+            let html = `<html>
+            <head>
+                <title>Grocery Checklist</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Segoe UI', Arial, sans-serif;
+                        background: white;
+                        color: #1f2937;
+                        line-height: 1.6;
+                        padding: 20px;
+                    }
+                    @page { size: A4; margin: 15mm; }
+                    @media print { body { padding: 0; } }
+
+                    .header {
+                        border-bottom: 3px solid #387ed1;
+                        padding-bottom: 15px;
+                        margin-bottom: 20px;
+                        text-align: center;
+                    }
+                    .header h1 {
+                        font-size: 24px;
+                        color: #387ed1;
+                        margin: 0 0 5px 0;
+                    }
+                    .header p {
+                        font-size: 12px;
+                        color: #6b7280;
+                        margin: 0;
+                    }
+
+                    .summary {
+                        background: #f0f4ff;
+                        border: 1px solid #387ed1;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin-bottom: 20px;
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 10px;
+                    }
+                    .summary-item {
+                        text-align: center;
+                    }
+                    .summary-label {
+                        font-size: 11px;
+                        color: #6b7280;
+                        font-weight: 500;
+                        margin-bottom: 5px;
+                    }
+                    .summary-value {
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #387ed1;
+                    }
+
+                    .category-box {
+                        margin-bottom: 20px;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        page-break-inside: avoid;
+                    }
+
+                    .category-header {
+                        background: linear-gradient(135deg, #387ed1, #5a9ce6);
+                        color: white;
+                        padding: 12px 15px;
+                        font-size: 14px;
+                        font-weight: bold;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .category-stats {
+                        font-size: 11px;
+                        font-weight: normal;
+                        opacity: 0.9;
+                    }
+
+                    .items-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .items-table th {
+                        background: #f3f4f6;
+                        padding: 8px;
+                        text-align: left;
+                        font-size: 11px;
+                        font-weight: 600;
+                        border-bottom: 2px solid #e5e7eb;
+                        color: #374151;
+                    }
+                    .items-table td {
+                        padding: 8px;
+                        font-size: 11px;
+                        border-bottom: 1px solid #f0f0f0;
+                    }
+                    .items-table tr:nth-child(even) {
+                        background: #fafafa;
+                    }
+                    .checkbox-col {
+                        width: 30px;
+                        text-align: center;
+                    }
+                    .checkbox-print {
+                        width: 16px;
+                        height: 16px;
+                        border: 1.5px solid #6b7280;
+                        display: inline-block;
+                        vertical-align: middle;
+                    }
+                    .checkbox-checked {
+                        background: #10b981;
+                        color: white;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+                    .item-name {
+                        font-weight: 500;
+                        color: #1f2937;
+                    }
+                    .item-name.checked {
+                        text-decoration: line-through;
+                        color: #9ca3af;
+                    }
+                    .qty-col {
+                        width: 80px;
+                        text-align: center;
+                    }
+                    .unit-col {
+                        width: 90px;
+                        text-align: center;
+                    }
+                    .status-col {
+                        width: 60px;
+                        text-align: center;
+                    }
+                    .status-badge {
+                        background: #dbeafe;
+                        color: #0369a1;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+                    .status-badge.checked {
+                        background: #d1fae5;
+                        color: #047857;
+                    }
+
+                    .notes-section {
+                        margin-top: 15px;
+                        padding: 10px;
+                        border-top: 1px solid #e5e7eb;
+                        background: #fafafa;
+                    }
+                    .notes-label {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #6b7280;
+                        margin-bottom: 5px;
+                    }
+                    .notes-lines {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 3px;
+                    }
+                    .note-line {
+                        border-bottom: 1px solid #d1d5db;
+                        height: 16px;
+                    }
+
+                    .footer {
+                        margin-top: 30px;
+                        padding-top: 15px;
+                        border-top: 1px solid #e5e7eb;
+                        text-align: center;
+                        font-size: 10px;
+                        color: #9ca3af;
+                    }
+
+                    @media print {
+                        .summary { page-break-inside: avoid; }
+                        .category-box { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>🛒 Grocery & Household Checklist</h1>
+                    <p>Generated on ${timestamp}</p>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="summary-label">Total Items</div>
+                        <div class="summary-value">${totalItems}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Checked</div>
+                        <div class="summary-value">${checkedItems}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Remaining</div>
+                        <div class="summary-value">${totalItems - checkedItems}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Completed</div>
+                        <div class="summary-value">${completionPercent}%</div>
+                    </div>
+                </div>`;
 
             data.categories.forEach(cat => {
+                let categoryChecked = 0;
+                let categoryTotal = 0;
                 let categoryItems = '';
+
                 cat.items.forEach(item => {
-                    const checked = item.checked ? ' (checked)' : '';
                     if (type === 'all' || (type === 'checked' && item.checked) || (type === 'unchecked' && !item.checked)) {
-                        categoryItems += `<div class="item">${item.name} - ${item.quantity} ${item.unit}${checked}</div>`;
+                        categoryTotal++;
+                        if (item.checked) categoryChecked++;
+                        const checkBoxHtml = item.checked ? '✓' : '☐';
+                        const isChecked = item.checked ? 'checked' : '';
+                        categoryItems += `<tr>
+                            <td class="checkbox-col"><div class="checkbox-print ${isChecked ? 'checkbox-checked' : ''}">${item.checked ? '✓' : ''}</div></td>
+                            <td class="item-name ${isChecked}"">${item.name}</td>
+                            <td class="qty-col">${item.quantity}</td>
+                            <td class="unit-col">${item.unit}</td>
+                            <td class="status-col"><span class="status-badge ${isChecked}"">${item.checked ? 'Done' : 'Pending'}</span></td>
+                        </tr>`;
                     }
                 });
 
-                // Only add category if it has items to display
                 if (categoryItems) {
-                    html += `<div class="category"><h2>${cat.name}</h2>${categoryItems}</div>`;
+                    const categoryPercent = categoryTotal > 0 ? Math.round((categoryChecked / categoryTotal) * 100) : 0;
+                    html += `<div class="category-box">
+                        <div class="category-header">
+                            <span>${cat.name}</span>
+                            <span class="category-stats">${categoryChecked}/${categoryTotal} (${categoryPercent}%)</span>
+                        </div>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-col">✓</th>
+                                    <th>Item Name</th>
+                                    <th class="qty-col">Quantity</th>
+                                    <th class="unit-col">Unit</th>
+                                    <th class="status-col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${categoryItems}
+                            </tbody>
+                        </table>
+                        <div class="notes-section">
+                            <div class="notes-label">Notes:</div>
+                            <div class="notes-lines">
+                                <div class="note-line"></div>
+                                <div class="note-line"></div>
+                            </div>
+                        </div>
+                    </div>`;
                 }
             });
 
-            html += '</body></html>';
+            html += `<div class="footer">
+                <p>Print friendly checklist | Page breaks optimized for A4 printing</p>
+            </div>
+            </body>
+            </html>`;
+
             printWindow.document.write(html);
             printWindow.document.close();
             printWindow.print();
